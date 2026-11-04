@@ -2,6 +2,8 @@ package com.example.week3_assignment.ui.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
@@ -13,51 +15,66 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 
 /**
- * Arama Barı Bileşeni (Compose UI - 100% Stateless)
+ * Arama Barı Bileşeni (Compose UI - %100 Stateless)
  *
- * Filtreleme mantığı içermez. Kullanıcının girdiği metni doğrudan ViewModel'e iletir.
+ * Kural 1 uyarınca hiçbir filtreleme veya koşul hesaplaması içermez.
+ * Kullanıcının girdiği metni doğrudan ViewModel'e iletir.
  */
 @Composable
 fun SearchBarComponent(
     searchQuery: String,
+    isSearchNotEmpty: Boolean,
     onSearchQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val focusManager = LocalFocusManager.current
+
     OutlinedTextField(
         value = searchQuery,
         onValueChange = onSearchQueryChange,
         modifier = modifier.fillMaxWidth(),
         placeholder = {
             Text(
-                text = "Cihaz veya oda adı ara...",
+                text = "Cihaz adı ara (örn. Lamba, Kamera, Klima)...",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = "Ara",
+                contentDescription = "Cihaz Ara",
                 tint = MaterialTheme.colorScheme.primary
             )
         },
         trailingIcon = {
-            if (searchQuery.isNotEmpty()) {
-                IconButton(onClick = { onSearchQueryChange("") }) {
+            if (isSearchNotEmpty) {
+                IconButton(
+                    onClick = {
+                        onSearchQueryChange("")
+                        focusManager.clearFocus()
+                    }
+                ) {
                     Icon(
                         imageVector = Icons.Default.Clear,
-                        contentDescription = "Temizle",
+                        contentDescription = "Aramayı Temizle",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
         },
         singleLine = true,
-        shape = RoundedCornerShape(16.dp),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(
+            onSearch = { focusManager.clearFocus() },
+            onDone = { focusManager.clearFocus() }
+        ),
+        shape = RoundedCornerShape(14.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
             unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
@@ -66,4 +83,3 @@ fun SearchBarComponent(
         )
     )
 }
-

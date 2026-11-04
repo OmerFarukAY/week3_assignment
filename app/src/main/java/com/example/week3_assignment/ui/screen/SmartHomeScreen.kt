@@ -1,7 +1,6 @@
 package com.example.week3_assignment.ui.screen
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -39,15 +38,17 @@ import com.example.week3_assignment.ui.components.SearchBarComponent
 import com.example.week3_assignment.ui.state.SmartHomeUiState
 
 /**
- * Akıllı Ev Ana Ekranı (Compose UI - 100% Stateless)
+ * Akıllı Ev Ana Ekranı (Compose UI - %100 Stateless)
  *
  * MİMARİ KURAL 1 (Katman Ayrımı):
  * Bu ekranda ve alt bileşenlerinde hiçbir .filter, .map veya matematiksel toplama/çıkarma
  * işlemi YER ALMAZ. Tüm durum SmartHomeUiState üzerinden ViewModel tarafından sağlanır.
  *
  * MİMARİ KURAL 2 (Performans & 120 FPS):
- * LazyColumn 'key = { it.id }' parametresi ile re-composition maliyetini minimize eder,
- * arayüzün saniyede 120 FPS akıcılıkla çalışmasını sağlar.
+ * Üst kontrol paneli (Canlı Enerji Sayacı, Arama Çubuğu ve Oda Filtreleri) ekranın en üstünde
+ * sabitlenmiş olup, altındaki LazyColumn 'key = { it.id }' ile 120 FPS akıcılıkla kayar.
+ * Böylece listedeki herhangi bir cihaz açılıp kapatıldığında en üstteki enerji sayacının
+ * reaktif değişimi her zaman anında görülür.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,6 +61,7 @@ fun SmartHomeScreen(
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -71,7 +73,7 @@ fun SmartHomeScreen(
                             imageVector = Icons.Default.Home,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(22.dp)
                         )
                         Spacer(modifier = Modifier.size(8.dp))
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -83,7 +85,7 @@ fun SmartHomeScreen(
                             )
                             Text(
                                 text = "BIL 403 • IoT Kontrol Paneli",
-                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -95,118 +97,117 @@ fun SmartHomeScreen(
             )
         }
     ) { innerPadding ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp)
         ) {
-            // 1. Canlı Enerji Sayacı Kartı
-            item(key = "energy_meter_card") {
-                EnergyMeterCard(
-                    formattedTotalPower = uiState.formattedTotalPower,
-                    activeOnlineCount = uiState.activeOnlineCount,
-                    totalDeviceCount = uiState.totalDeviceCount
+            // 1. Ekranın En Üstünde Sabit Reaktif Enerji Sayacı Kartı (İster 2 & 3)
+            EnergyMeterCard(
+                formattedTotalPower = uiState.formattedTotalPower,
+                activeCountSummary = uiState.activeCountSummary,
+                totalCountSummary = uiState.totalCountSummary
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 2. Arama Çubuğu (İster 1)
+            SearchBarComponent(
+                searchQuery = uiState.searchQuery,
+                isSearchNotEmpty = uiState.isSearchNotEmpty,
+                onSearchQueryChange = onSearchQueryChange
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // 3. Oda Filtreleme Sekmeleri (İster 1: Tümü, Salon, Mutfak...)
+            RoomFilterChips(
+                roomChips = uiState.roomChips,
+                onRoomSelect = onRoomSelect
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // 4. Cihazlar Başlığı ve Sonuç Özeti
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Cihazlar",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    text = uiState.filteredCountSummary,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
-            // 2. Arama Barı
-            item(key = "search_bar") {
-                SearchBarComponent(
-                    searchQuery = uiState.searchQuery,
-                    onSearchQueryChange = onSearchQueryChange
-                )
-            }
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // 3. Oda Filtreleme Sekmeleri
-            item(key = "room_filter_chips") {
-                RoomFilterChips(
-                    rooms = uiState.roomList,
-                    selectedRoom = uiState.selectedRoom,
-                    onRoomSelect = onRoomSelect
-                )
-            }
-
-            // 4. Cihazlar Başlığı ve Adet Bilgisi
-            item(key = "devices_header") {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Cihazlar",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Text(
-                        text = "${uiState.devices.size} sonuç",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            // 5. Cihaz Listesi veya Boş Durum (Empty State)
+            // 5. Cihaz Listesi (120 FPS Kaydırılabilir LazyColumn)
             if (uiState.isEmptyResult) {
-                item(key = "empty_state") {
-                    Surface(
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 24.dp),
+                    shape = RoundedCornerShape(18.dp),
+                    color = MaterialTheme.colorScheme.surface
+                ) {
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 32.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.SearchOff,
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                text = "Eşleşen Cihaz Bulunamadı",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.SemiBold
-                                ),
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "Arama kriterlerinize veya seçili odaya uygun cihaz yok.",
-                                style = MaterialTheme.typography.bodySmall,
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Default.SearchOff,
+                            contentDescription = null,
+                            modifier = Modifier.size(44.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "Eşleşen Cihaz Bulunamadı",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Arama kriterlerinize veya seçili odaya uygun cihaz yok.",
+                            style = MaterialTheme.typography.bodySmall,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             } else {
-                items(
-                    items = uiState.devices,
-                    key = { it.id }
-                ) { device ->
-                    DeviceItemCard(
-                        device = device,
-                        onToggle = onToggleDevice
-                    )
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentPadding = PaddingValues(bottom = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(
+                        items = uiState.devices,
+                        key = { it.id }
+                    ) { device ->
+                        DeviceItemCard(
+                            device = device,
+                            onToggle = onToggleDevice
+                        )
+                    }
                 }
-            }
-
-            // Alt Boşluk
-            item(key = "bottom_spacer") {
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
 }
-

@@ -12,49 +12,56 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.week3_assignment.ui.state.RoomChipUiModel
 
 /**
- * Oda Filtreleme Sekmeleri (Compose UI - 100% Stateless)
+ * Oda Filtreleme Sekmeleri (Compose UI - %100 Stateless)
  *
- * Filtreleme mantığı içermez. Sadece hazır oda listesini çizer ve tıklanan odayı
- * ViewModel'e bildirir.
+ * Kural 1 uyarınca hiçbir karşılaştırma veya filtreleme mantığı içermez.
+ * ViewModel tarafından hazırlanan RoomChipUiModel listesini doğrudan çizer.
  */
 @Composable
 fun RoomFilterChips(
-    rooms: List<String>,
-    selectedRoom: String,
+    roomChips: List<RoomChipUiModel>,
     onRoomSelect: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyRow(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(horizontal = 4.dp)
+        contentPadding = PaddingValues(horizontal = 2.dp)
     ) {
         items(
-            items = rooms,
-            key = { it }
-        ) { room ->
-            val isSelected = room.equals(selectedRoom, ignoreCase = true)
+            items = roomChips,
+            key = { it.name }
+        ) { chip ->
             FilterChip(
-                selected = isSelected,
-                onClick = { onRoomSelect(room) },
+                selected = chip.isSelected,
+                onClick = { onRoomSelect(chip.name) },
                 label = {
                     Text(
-                        text = room,
-                        style = MaterialTheme.typography.labelLarge
+                        text = chip.name,
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontWeight = if (chip.isSelected) FontWeight.Bold else FontWeight.Medium
+                        )
                     )
                 },
                 shape = RoundedCornerShape(12.dp),
+                border = FilterChipDefaults.filterChipBorder(
+                    enabled = true,
+                    selected = chip.isSelected,
+                    borderColor = MaterialTheme.colorScheme.outlineVariant,
+                    selectedBorderColor = MaterialTheme.colorScheme.primary
+                ),
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                    selectedLabelColor = MaterialTheme.colorScheme.surface,
+                    containerColor = MaterialTheme.colorScheme.surface,
                     labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
         }
     }
 }
-

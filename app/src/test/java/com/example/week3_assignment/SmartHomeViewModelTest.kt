@@ -59,6 +59,14 @@ class SmartHomeViewModelTest {
         assertEquals("106.0 W", state.formattedTotalPower)
         assertEquals(6, state.activeOnlineCount)
         assertEquals(10, state.totalDeviceCount)
+        assertEquals("6 Aktif Cihaz", state.activeCountSummary)
+        assertEquals("10 Toplam Cihaz", state.totalCountSummary)
+        assertEquals("10 sonuç", state.filteredCountSummary)
+
+        // İlk 3 oda sekmesi: Tümü, Salon, Mutfak
+        assertEquals("Tümü", state.roomList[0])
+        assertEquals("Salon", state.roomList[1])
+        assertEquals("Mutfak", state.roomList[2])
 
         collectJob.cancel()
     }
@@ -122,7 +130,9 @@ class SmartHomeViewModelTest {
         val state = viewModel.uiState.value
         // Salonda 3 cihaz var: Köşe Lambası, Tavan Avizesi, Merkezi Termostat
         assertEquals(3, state.devices.size)
+        assertEquals("3 sonuç", state.filteredCountSummary)
         assertTrue(state.devices.all { it.room == "Salon" })
+        assertTrue(state.roomChips.first { it.name == "Salon" }.isSelected)
 
         // "Tümü" seçildiğinde 10 cihaz da geri gelmeli
         viewModel.onRoomSelected("Tümü")
@@ -135,17 +145,27 @@ class SmartHomeViewModelTest {
     }
 
     @Test
-    fun searchQuery_filtersCorrectly() = runTest(testDispatcher) {
+    fun searchQuery_filtersCorrectlyIncludingTurkishCharacters() = runTest(testDispatcher) {
         val collectJob = startCollectingUiState()
         advanceUntilIdle()
 
         viewModel.onSearchQueryChanged("Kamera")
+        // Arama metni senkron olarak hemen güncellenmeli (TextField karakter kaybını önlemek için)
+        assertEquals("Kamera", viewModel.uiState.value.searchQuery)
+        assertTrue(viewModel.uiState.value.isSearchNotEmpty)
+
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
         // Bahçe Kamerası ve Giriş Kamerası olmak üzere 2 cihaz
         assertEquals(2, state.devices.size)
         assertTrue(state.devices.all { it.name.contains("Kamera", ignoreCase = true) })
+
+        // Türkçe büyük/küçük harf testi ("GİRİŞ" -> "Giriş Kamerası")
+        viewModel.onSearchQueryChanged("GİRİŞ")
+        advanceUntilIdle()
+        assertEquals(1, viewModel.uiState.value.devices.size)
+        assertEquals("Giriş Kamerası", viewModel.uiState.value.devices.first().name)
 
         collectJob.cancel()
     }

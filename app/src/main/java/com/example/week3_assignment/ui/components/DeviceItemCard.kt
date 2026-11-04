@@ -1,9 +1,7 @@
 package com.example.week3_assignment.ui.components
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
@@ -32,30 +29,37 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.week3_assignment.data.model.DeviceCategory
 import com.example.week3_assignment.ui.state.DeviceUiModel
+import com.example.week3_assignment.ui.theme.ActiveEmeraldText
+import com.example.week3_assignment.ui.theme.CameraCategoryBg
 import com.example.week3_assignment.ui.theme.CameraCategoryColor
-import com.example.week3_assignment.ui.theme.ElectricGreen
+import com.example.week3_assignment.ui.theme.IosSwitchGreen
+import com.example.week3_assignment.ui.theme.LightCategoryBg
 import com.example.week3_assignment.ui.theme.LightCategoryColor
+import com.example.week3_assignment.ui.theme.OfflineBadgeBg
 import com.example.week3_assignment.ui.theme.OfflineGray
+import com.example.week3_assignment.ui.theme.ThermostatCategoryBg
 import com.example.week3_assignment.ui.theme.ThermostatCategoryColor
+import com.example.week3_assignment.ui.theme.VacuumCategoryBg
 import com.example.week3_assignment.ui.theme.VacuumCategoryColor
 
 /**
- * Tekil Cihaz Kartı (Compose UI - 100% Stateless)
+ * Tekil Cihaz Kartı (Compose UI - %100 Stateless)
  *
- * Kural 1 uyarınca hesaplama yapmaz; hazır DeviceUiModel verisini görüntüler.
- * Aç/Kapat butonuna basıldığında doğrudan onToggle(device.id) callback'i tetiklenir.
+ * Kural 1 uyarınca hiçbir filtreleme veya matematiksel işlem yapmaz;
+ * ViewModel tarafından hazırlanan DeviceUiModel verisini çizer ve
+ * Aç/Kapat etkileşimini onToggle(device.id) ile yukarı iletir.
  */
 @Composable
 fun DeviceItemCard(
@@ -70,6 +74,13 @@ fun DeviceItemCard(
         DeviceCategory.VACUUM -> VacuumCategoryColor
     }
 
+    val categoryBgColor = when (device.category) {
+        DeviceCategory.LIGHT -> LightCategoryBg
+        DeviceCategory.CAMERA -> CameraCategoryBg
+        DeviceCategory.THERMOSTAT -> ThermostatCategoryBg
+        DeviceCategory.VACUUM -> VacuumCategoryBg
+    }
+
     val categoryIcon: ImageVector = when (device.category) {
         DeviceCategory.LIGHT -> Icons.Default.Lightbulb
         DeviceCategory.CAMERA -> Icons.Default.Videocam
@@ -77,35 +88,29 @@ fun DeviceItemCard(
         DeviceCategory.VACUUM -> Icons.Default.CleaningServices
     }
 
-    val cardBorderColor by animateColorAsState(
-        targetValue = when {
-            !device.isOnline -> Color.Transparent
-            device.isActive -> categoryColor.copy(alpha = 0.5f)
-            else -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-        },
-        animationSpec = tween(durationMillis = 200),
-        label = "cardBorderColor"
-    )
+    val cardBorderColor = when {
+        !device.isOnline -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+        device.isActive -> IosSwitchGreen.copy(alpha = 0.45f)
+        else -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)
+    }
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .alpha(if (device.isOnline) 1.0f else 0.7f),
-        shape = RoundedCornerShape(20.dp),
+            .alpha(if (device.isOnline) 1.0f else 0.72f),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (device.isActive && device.isOnline) 4.dp else 1.dp
+            defaultElevation = if (device.isActive && device.isOnline) 2.dp else 0.dp
         ),
-        border = CardDefaults.outlinedCardBorder().copy(
-            brush = androidx.compose.ui.graphics.SolidColor(cardBorderColor)
-        )
+        border = BorderStroke(1.dp, cardBorderColor)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -114,43 +119,36 @@ fun DeviceItemCard(
                 modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Kategori İkonu
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(46.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(
-                            if (device.isOnline) categoryColor.copy(alpha = 0.15f)
-                            else OfflineGray.copy(alpha = 0.15f)
-                        ),
+                        .background(if (device.isOnline) categoryBgColor else OfflineBadgeBg),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = if (device.isOnline) categoryIcon else Icons.Default.WifiOff,
-                        contentDescription = device.category.displayName,
+                        contentDescription = device.categoryLabel,
                         tint = if (device.isOnline) categoryColor else OfflineGray,
-                        modifier = Modifier.size(26.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
 
                 Spacer(modifier = Modifier.width(14.dp))
 
-                // Cihaz Bilgileri
                 Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = device.name,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.SemiBold
-                            ),
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+                    Text(
+                        text = device.name,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    // Oda ve Durum Etiketi
                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Oda Etiketi
                         Surface(
                             shape = RoundedCornerShape(6.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
@@ -158,68 +156,75 @@ fun DeviceItemCard(
                             Text(
                                 text = device.room,
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.Medium
+                                    fontWeight = FontWeight.SemiBold
                                 ),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)
                             )
                         }
 
                         Spacer(modifier = Modifier.width(8.dp))
 
-                        // Güç Tüketimi
+                        // Güç Tüketimi (Watt)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Default.Bolt,
                                 contentDescription = null,
-                                tint = if (device.isActive && device.isOnline) ElectricGreen else OfflineGray,
+                                tint = if (device.isActive && device.isOnline) ActiveEmeraldText else OfflineGray,
                                 modifier = Modifier.size(14.dp)
                             )
                             Text(
                                 text = device.formattedWatt,
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    fontWeight = FontWeight.Medium
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.Bold
                                 ),
-                                color = if (device.isActive && device.isOnline) ElectricGreen else MaterialTheme.colorScheme.onSurfaceVariant
+                                color = if (device.isActive && device.isOnline) {
+                                    ActiveEmeraldText
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                }
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(3.dp))
 
+                    // Durum Metni (WCAG AA 4.5:1+ kontrastlı)
                     Text(
                         text = device.statusText,
-                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
                         color = when {
                             !device.isOnline -> OfflineGray
-                            device.isActive -> ElectricGreen
-                            else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            device.isActive -> ActiveEmeraldText
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
                         }
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
-            // Sağ: Aç / Kapat Butonu (Switch)
-            Column(
-                horizontalAlignment = Alignment.End
-            ) {
-                Switch(
-                    checked = device.isActive,
-                    onCheckedChange = { onToggle(device.id) },
-                    enabled = device.canToggle,
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = ElectricGreen,
-                        uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
-                        disabledCheckedTrackColor = OfflineGray.copy(alpha = 0.3f),
-                        disabledUncheckedTrackColor = OfflineGray.copy(alpha = 0.15f)
-                    )
+            // Sağ: Aç / Kapat Anahtarı (Switch)
+            Switch(
+                checked = device.isActive,
+                onCheckedChange = { onToggle(device.id) },
+                enabled = device.canToggle,
+                modifier = Modifier.semantics {
+                    contentDescription = "${device.name} Aç Kapat"
+                },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = IosSwitchGreen,
+                    uncheckedThumbColor = Color.White,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.outlineVariant,
+                    uncheckedBorderColor = Color.Transparent,
+                    disabledCheckedTrackColor = OfflineGray.copy(alpha = 0.3f),
+                    disabledUncheckedTrackColor = OfflineGray.copy(alpha = 0.2f),
+                    disabledUncheckedThumbColor = OfflineGray.copy(alpha = 0.5f)
                 )
-            }
+            )
         }
     }
 }
-
