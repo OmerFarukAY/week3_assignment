@@ -69,14 +69,15 @@ Uygulamanın reaktif hesaplama doğruluğu `SmartHomeViewModelTest` sınıfında
 
 ## 📱 Ekran Görüntüleri
 
-Tüm ekran görüntüleri `screenshots/` klasöründe yer almaktadır:
-1. `screenshot_initial.png`: `106.0 W` başlangıç tüketimi, sabit üst enerji sayacı ve cihaz listesi.
-2. `screenshot_toggled.png`: `Köşe Lambası` (15.0 W) kapatıldığında sayacın reaktif olarak `91.0 W` (5 Aktif Cihaz) değerine düşmesi.
-3. `screenshot_toggled_both.png`: `Tavan Avizesi` (60.0 W) açıldığında sayacın reaktif olarak `166.0 W` (7 Aktif Cihaz) değerine çıkması.
-4. `screenshot_toggled_tavan.png`: Liste aşağı kaydırıldığında üstteki sayacın sabit kalması, `Yatak Odası Kliması` (1200 W) ve `Mutfak Spotları` (45 W) açıldığında sayacın `1351.0 W` olması ve çevrimdışı `Balkon Aydınlatması` cihazının kilitli Switch durumu.
-5. `screenshot_filter_bahce.png`: `"Salon"` odası filtresi (3 sonuç).
-6. `screenshot_filter_bahce_active.png`: `"Bahçe"` odası filtresi (1 sonuç).
-7. `screenshot_search_kamera.png`: Arama çubuğu `"Kamera"` filtreleme testi (2 sonuç: `Bahçe Kamerası` ve `Giriş Kamerası`).
+| 1. Başlangıç (`106.0 W`) | 2. Cihaz Kapatma (`91.0 W`) | 3. Cihaz Açma (`166.0 W`) |
+| :---: | :---: | :---: |
+| <img src="screenshots/screenshot_initial.png" width="250" alt="Başlangıç Durumu" /> | <img src="screenshots/screenshot_toggled.png" width="250" alt="Cihaz Kapatma" /> | <img src="screenshots/screenshot_toggled_both.png" width="250" alt="Cihaz Açma" /> |
+| 6 aktif ve çevrimiçi cihazın toplamı (`106.0 W`) | `Köşe Lambası` (15 W) kapatıldığında reaktif `91.0 W` | `Tavan Avizesi` (60 W) açıldığında reaktif `166.0 W` |
+
+| 4. Klima Açma (`1351.0 W`) & Offline Cihaz | 5. Oda Filtresi (`Salon`) | 6. Arama Filtresi (`Kamera`) |
+| :---: | :---: | :---: |
+| <img src="screenshots/screenshot_toggled_tavan.png" width="250" alt="Klima ve Offline Cihaz" /> | <img src="screenshots/screenshot_filter_bahce.png" width="250" alt="Salon Oda Filtresi" /> | <img src="screenshots/screenshot_search_kamera.png" width="250" alt="Kamera Arama Filtresi" /> |
+| Üst sayaç sabit; çevrimdışı `Balkon Aydınlatması` kilitli | `"Salon"` sekmesinde salona ait 3 cihaz | `"Kamera"` aramasında 2 kamera sonucu |
 
 ---
 
