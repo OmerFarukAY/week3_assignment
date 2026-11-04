@@ -7,3 +7,4 @@ interface DeviceRepository {
     fun getDevices(): Flow<List<Device>>
     suspend fun toggleDevice(deviceId: Int)
 }
+

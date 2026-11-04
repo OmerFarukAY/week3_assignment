@@ -9,3 +9,4 @@ data class Device(
     val isActive: Boolean,
     val consumptionWatt: Double
 )
+

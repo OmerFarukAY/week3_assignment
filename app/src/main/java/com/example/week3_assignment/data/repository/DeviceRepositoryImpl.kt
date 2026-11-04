@@ -125,3 +125,4 @@ class DeviceRepositoryImpl : DeviceRepository {
         }
     }
 }
+

@@ -6,3 +6,4 @@ enum class DeviceCategory(val displayName: String) {
     THERMOSTAT("Termostat & İklimlendirme"),
     VACUUM("Robot Süpürge")
 }
+

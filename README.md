@@ -91,3 +91,4 @@ Tüm ekran görüntüleri `screenshots/` klasöründe yer almaktadır:
    ```bash
    ./gradlew installDebug
    ```
+

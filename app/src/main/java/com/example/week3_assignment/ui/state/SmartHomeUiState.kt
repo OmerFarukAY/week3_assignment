@@ -29,3 +29,4 @@ data class SmartHomeUiState(
     val devices: List<DeviceUiModel> = emptyList(),
     val isEmptyResult: Boolean = false
 )
+
